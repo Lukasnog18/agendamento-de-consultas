@@ -1,52 +1,94 @@
 import { Cliente } from '@/types';
-
-// Serviço preparado para integração com Supabase
-// Por enquanto, mantém dados apenas em memória (session)
+import { supabase } from '@/integrations/supabase/client';
 
 class ClienteService {
-  private clientes: Cliente[] = [];
-
-  // TODO: Substituir por Supabase query
   async listar(): Promise<Cliente[]> {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    return [...this.clientes];
+    const { data, error } = await supabase
+      .from('clientes')
+      .select('*')
+      .order('nome');
+    
+    if (error) {
+      console.error('Erro ao listar clientes:', error);
+      return [];
+    }
+    
+    return data || [];
   }
 
   async buscarPorId(id: string): Promise<Cliente | null> {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    return this.clientes.find(c => c.id === id) || null;
+    const { data, error } = await supabase
+      .from('clientes')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+    
+    if (error) {
+      console.error('Erro ao buscar cliente:', error);
+      return null;
+    }
+    
+    return data;
   }
 
-  async criar(data: Omit<Cliente, 'id' | 'createdAt'>): Promise<Cliente> {
-    await new Promise(resolve => setTimeout(resolve, 100));
+  async criar(data: { nome: string; telefone: string; email: string }): Promise<Cliente | null> {
+    const { data: user } = await supabase.auth.getUser();
     
-    const novoCliente: Cliente = {
-      ...data,
-      id: crypto.randomUUID(),
-      createdAt: new Date(),
-    };
+    if (!user.user) {
+      console.error('Usuário não autenticado');
+      return null;
+    }
     
-    this.clientes.push(novoCliente);
-    return novoCliente;
+    const { data: cliente, error } = await supabase
+      .from('clientes')
+      .insert({
+        user_id: user.user.id,
+        nome: data.nome,
+        telefone: data.telefone || null,
+        email: data.email || null,
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Erro ao criar cliente:', error);
+      return null;
+    }
+    
+    return cliente;
   }
 
-  async atualizar(id: string, data: Partial<Omit<Cliente, 'id' | 'createdAt'>>): Promise<Cliente | null> {
-    await new Promise(resolve => setTimeout(resolve, 100));
+  async atualizar(id: string, data: Partial<{ nome: string; telefone: string; email: string }>): Promise<Cliente | null> {
+    const { data: cliente, error } = await supabase
+      .from('clientes')
+      .update({
+        nome: data.nome,
+        telefone: data.telefone || null,
+        email: data.email || null,
+      })
+      .eq('id', id)
+      .select()
+      .single();
     
-    const index = this.clientes.findIndex(c => c.id === id);
-    if (index === -1) return null;
+    if (error) {
+      console.error('Erro ao atualizar cliente:', error);
+      return null;
+    }
     
-    this.clientes[index] = { ...this.clientes[index], ...data };
-    return this.clientes[index];
+    return cliente;
   }
 
   async excluir(id: string): Promise<boolean> {
-    await new Promise(resolve => setTimeout(resolve, 100));
+    const { error } = await supabase
+      .from('clientes')
+      .delete()
+      .eq('id', id);
     
-    const index = this.clientes.findIndex(c => c.id === id);
-    if (index === -1) return false;
+    if (error) {
+      console.error('Erro ao excluir cliente:', error);
+      return false;
+    }
     
-    this.clientes.splice(index, 1);
     return true;
   }
 }

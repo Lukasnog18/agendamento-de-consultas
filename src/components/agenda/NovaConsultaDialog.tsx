@@ -100,7 +100,7 @@ export function NovaConsultaDialog({ open, onOpenChange, dataSelecionada, onSucc
 
     try {
       const resultado = await consultaService.criar({
-        clienteId,
+        cliente_id: clienteId,
         data: new Date(data),
         hora,
         observacao: observacao.trim(),

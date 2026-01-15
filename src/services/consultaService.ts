@@ -1,64 +1,106 @@
 import { Consulta } from '@/types';
-import { clienteService } from './clienteService';
-import { startOfDay, isBefore, parseISO, format } from 'date-fns';
-
-// Serviço preparado para integração com Supabase
-// Por enquanto, mantém dados apenas em memória (session)
+import { supabase } from '@/integrations/supabase/client';
+import { startOfDay, isBefore, format } from 'date-fns';
 
 class ConsultaService {
-  private consultas: Consulta[] = [];
-
-  // TODO: Substituir por Supabase query
   async listar(): Promise<Consulta[]> {
-    await new Promise(resolve => setTimeout(resolve, 100));
+    const { data, error } = await supabase
+      .from('consultas')
+      .select(`
+        *,
+        cliente:clientes(*)
+      `)
+      .order('data')
+      .order('hora');
     
-    // Popula dados do cliente
-    const consultasComCliente = await Promise.all(
-      this.consultas.map(async (consulta) => {
-        const cliente = await clienteService.buscarPorId(consulta.clienteId);
-        return { ...consulta, cliente: cliente || undefined };
-      })
-    );
+    if (error) {
+      console.error('Erro ao listar consultas:', error);
+      return [];
+    }
     
-    return consultasComCliente;
+    return (data || []).map(consulta => ({
+      ...consulta,
+      cliente: consulta.cliente || undefined,
+    }));
   }
 
   async listarPorData(data: Date): Promise<Consulta[]> {
-    const todas = await this.listar();
     const dataFormatada = format(data, 'yyyy-MM-dd');
     
-    return todas.filter(c => format(new Date(c.data), 'yyyy-MM-dd') === dataFormatada);
+    const { data: consultas, error } = await supabase
+      .from('consultas')
+      .select(`
+        *,
+        cliente:clientes(*)
+      `)
+      .eq('data', dataFormatada)
+      .order('hora');
+    
+    if (error) {
+      console.error('Erro ao listar consultas por data:', error);
+      return [];
+    }
+    
+    return (consultas || []).map(consulta => ({
+      ...consulta,
+      cliente: consulta.cliente || undefined,
+    }));
   }
 
   async buscarPorId(id: string): Promise<Consulta | null> {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    const consulta = this.consultas.find(c => c.id === id);
+    const { data, error } = await supabase
+      .from('consultas')
+      .select(`
+        *,
+        cliente:clientes(*)
+      `)
+      .eq('id', id)
+      .maybeSingle();
     
-    if (consulta) {
-      const cliente = await clienteService.buscarPorId(consulta.clienteId);
-      return { ...consulta, cliente: cliente || undefined };
+    if (error) {
+      console.error('Erro ao buscar consulta:', error);
+      return null;
     }
     
-    return null;
+    if (!data) return null;
+    
+    return {
+      ...data,
+      cliente: data.cliente || undefined,
+    };
   }
 
   async verificarDisponibilidade(data: Date, hora: string, excluirId?: string): Promise<boolean> {
     const dataFormatada = format(data, 'yyyy-MM-dd');
     
-    const conflito = this.consultas.find(c => {
-      if (excluirId && c.id === excluirId) return false;
-      if (c.status === 'cancelada') return false;
-      
-      const consultaData = format(new Date(c.data), 'yyyy-MM-dd');
-      return consultaData === dataFormatada && c.hora === hora;
-    });
+    let query = supabase
+      .from('consultas')
+      .select('id')
+      .eq('data', dataFormatada)
+      .eq('hora', hora)
+      .neq('status', 'cancelada');
     
-    return !conflito;
+    if (excluirId) {
+      query = query.neq('id', excluirId);
+    }
+    
+    const { data: conflitos, error } = await query;
+    
+    if (error) {
+      console.error('Erro ao verificar disponibilidade:', error);
+      return false;
+    }
+    
+    return !conflitos || conflitos.length === 0;
   }
 
-  async criar(data: Omit<Consulta, 'id' | 'createdAt' | 'cliente'>): Promise<Consulta | { error: string }> {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
+  async criar(data: {
+    cliente_id: string;
+    data: Date;
+    hora: string;
+    observacao?: string;
+    status: 'agendada' | 'realizada' | 'cancelada';
+  }): Promise<Consulta | { error: string }> {
     // Validação: não permitir datas passadas
     const hoje = startOfDay(new Date());
     const dataConsulta = startOfDay(new Date(data.data));
@@ -73,37 +115,72 @@ class ConsultaService {
       return { error: 'Já existe uma consulta agendada para este horário.' };
     }
     
-    const novaConsulta: Consulta = {
-      ...data,
-      id: crypto.randomUUID(),
-      createdAt: new Date(),
+    const { data: user } = await supabase.auth.getUser();
+    
+    if (!user.user) {
+      return { error: 'Usuário não autenticado.' };
+    }
+    
+    const { data: consulta, error } = await supabase
+      .from('consultas')
+      .insert({
+        user_id: user.user.id,
+        cliente_id: data.cliente_id,
+        data: format(data.data, 'yyyy-MM-dd'),
+        hora: data.hora,
+        observacao: data.observacao || null,
+        status: data.status,
+      })
+      .select(`
+        *,
+        cliente:clientes(*)
+      `)
+      .single();
+    
+    if (error) {
+      console.error('Erro ao criar consulta:', error);
+      return { error: 'Erro ao agendar consulta.' };
+    }
+    
+    return {
+      ...consulta,
+      cliente: consulta.cliente || undefined,
     };
-    
-    this.consultas.push(novaConsulta);
-    
-    const cliente = await clienteService.buscarPorId(novaConsulta.clienteId);
-    return { ...novaConsulta, cliente: cliente || undefined };
   }
 
   async atualizarStatus(id: string, status: Consulta['status']): Promise<Consulta | null> {
-    await new Promise(resolve => setTimeout(resolve, 100));
+    const { data: consulta, error } = await supabase
+      .from('consultas')
+      .update({ status })
+      .eq('id', id)
+      .select(`
+        *,
+        cliente:clientes(*)
+      `)
+      .single();
     
-    const index = this.consultas.findIndex(c => c.id === id);
-    if (index === -1) return null;
+    if (error) {
+      console.error('Erro ao atualizar status:', error);
+      return null;
+    }
     
-    this.consultas[index] = { ...this.consultas[index], status };
-    
-    const cliente = await clienteService.buscarPorId(this.consultas[index].clienteId);
-    return { ...this.consultas[index], cliente: cliente || undefined };
+    return {
+      ...consulta,
+      cliente: consulta.cliente || undefined,
+    };
   }
 
   async excluir(id: string): Promise<boolean> {
-    await new Promise(resolve => setTimeout(resolve, 100));
+    const { error } = await supabase
+      .from('consultas')
+      .delete()
+      .eq('id', id);
     
-    const index = this.consultas.findIndex(c => c.id === id);
-    if (index === -1) return false;
+    if (error) {
+      console.error('Erro ao excluir consulta:', error);
+      return false;
+    }
     
-    this.consultas.splice(index, 1);
     return true;
   }
 }

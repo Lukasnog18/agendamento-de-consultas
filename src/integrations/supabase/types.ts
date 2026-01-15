@@ -14,7 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      clientes: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          nome: string
+          telefone: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          nome: string
+          telefone?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          nome?: string
+          telefone?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      consultas: {
+        Row: {
+          cliente_id: string
+          created_at: string
+          data: string
+          hora: string
+          id: string
+          observacao: string | null
+          status: Database["public"]["Enums"]["consulta_status"]
+          user_id: string
+        }
+        Insert: {
+          cliente_id: string
+          created_at?: string
+          data: string
+          hora: string
+          id?: string
+          observacao?: string | null
+          status?: Database["public"]["Enums"]["consulta_status"]
+          user_id: string
+        }
+        Update: {
+          cliente_id?: string
+          created_at?: string
+          data?: string
+          hora?: string
+          id?: string
+          observacao?: string | null
+          status?: Database["public"]["Enums"]["consulta_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consultas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +108,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      consulta_status: "agendada" | "realizada" | "cancelada"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +235,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      consulta_status: ["agendada", "realizada", "cancelada"],
+    },
   },
 } as const
