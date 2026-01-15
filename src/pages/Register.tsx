@@ -46,7 +46,7 @@ export default function Register() {
       return;
     }
 
-    const success = await register(nome, email, password);
+    const { success, error } = await register(nome, email, password);
     
     if (success) {
       toast({
@@ -58,7 +58,7 @@ export default function Register() {
       toast({
         variant: 'destructive',
         title: 'Erro ao cadastrar',
-        description: 'Ocorreu um erro ao criar sua conta. Tente novamente.',
+        description: error || 'Ocorreu um erro ao criar sua conta. Tente novamente.',
       });
     }
   };

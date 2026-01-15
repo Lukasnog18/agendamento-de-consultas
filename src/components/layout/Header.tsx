@@ -1,12 +1,20 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Calendar, Users, LogOut } from 'lucide-react';
+import { Calendar, Users, LogOut, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 export function Header() {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    await logout();
+    setIsLoggingOut(false);
+  };
 
   const navItems = [
     { path: '/clientes', label: 'Clientes', icon: Users },
@@ -48,10 +56,20 @@ export function Header() {
 
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground">
-            Olá, <span className="font-medium text-foreground">{user?.nome}</span>
+            {user?.email}
           </span>
-          <Button variant="ghost" size="sm" onClick={logout} className="gap-2">
-            <LogOut className="h-4 w-4" />
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleLogout} 
+            className="gap-2"
+            disabled={isLoggingOut}
+          >
+            {isLoggingOut ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <LogOut className="h-4 w-4" />
+            )}
             Sair
           </Button>
         </div>

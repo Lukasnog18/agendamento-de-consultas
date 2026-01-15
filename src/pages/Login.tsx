@@ -39,7 +39,7 @@ export default function Login() {
       return;
     }
 
-    const success = await login(email, password);
+    const { success, error } = await login(email, password);
     
     if (success) {
       toast({
@@ -51,7 +51,7 @@ export default function Login() {
       toast({
         variant: 'destructive',
         title: 'Erro ao entrar',
-        description: 'Verifique suas credenciais e tente novamente.',
+        description: error || 'Verifique suas credenciais e tente novamente.',
       });
     }
   };

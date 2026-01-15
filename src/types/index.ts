@@ -1,26 +1,27 @@
 export interface Cliente {
   id: string;
+  user_id: string;
   nome: string;
-  telefone: string;
-  email: string;
-  createdAt: Date;
+  telefone: string | null;
+  email: string | null;
+  created_at: string;
 }
 
 export interface Consulta {
   id: string;
-  clienteId: string;
+  user_id: string;
+  cliente_id: string;
   cliente?: Cliente;
-  data: Date;
+  data: string;
   hora: string;
-  observacao: string;
+  observacao: string | null;
   status: 'agendada' | 'realizada' | 'cancelada';
-  createdAt: Date;
+  created_at: string;
 }
 
 export interface User {
   id: string;
   email: string;
-  nome: string;
 }
 
 export interface AuthState {
