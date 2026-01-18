@@ -110,14 +110,14 @@ export default function Clientes() {
       if (editingCliente) {
         await clienteService.atualizar(editingCliente.id, { nome: nome.trim(), telefone: telefone.trim(), email: email.trim() });
         toast({
-          title: 'Cliente atualizado',
-          description: 'Os dados do cliente foram salvos.',
+          title: 'Paciente atualizado',
+          description: 'Os dados do paciente foram salvos.',
         });
       } else {
         await clienteService.criar({ nome: nome.trim(), telefone: telefone.trim(), email: email.trim() });
         toast({
-          title: 'Cliente cadastrado',
-          description: 'O novo cliente foi adicionado com sucesso.',
+          title: 'Paciente cadastrado',
+          description: 'O novo paciente foi adicionado com sucesso.',
         });
       }
 
@@ -128,7 +128,7 @@ export default function Clientes() {
       toast({
         variant: 'destructive',
         title: 'Erro',
-        description: 'Ocorreu um erro ao salvar o cliente.',
+        description: 'Ocorreu um erro ao salvar o paciente.',
       });
     } finally {
       setIsSaving(false);
@@ -141,8 +141,8 @@ export default function Clientes() {
     try {
       await clienteService.excluir(deletingCliente.id);
       toast({
-        title: 'Cliente excluído',
-        description: 'O cliente foi removido com sucesso.',
+        title: 'Paciente excluído',
+        description: 'O paciente foi removido com sucesso.',
       });
       setIsDeleteDialogOpen(false);
       setDeletingCliente(null);
@@ -151,31 +151,31 @@ export default function Clientes() {
       toast({
         variant: 'destructive',
         title: 'Erro',
-        description: 'Ocorreu um erro ao excluir o cliente.',
+        description: 'Ocorreu um erro ao excluir o paciente.',
       });
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Clientes</h1>
-          <p className="text-muted-foreground">Gerencie seus clientes cadastrados</p>
+          <h1 className="text-2xl font-bold text-foreground">Pacientes</h1>
+          <p className="text-muted-foreground">Gerencie seus pacientes cadastrados</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
           <DialogTrigger asChild>
             <Button onClick={openCreateDialog} className="gap-2">
               <Plus className="h-4 w-4" />
-              Novo Cliente
+              Novo Paciente
             </Button>
           </DialogTrigger>
           <DialogContent>
             <form onSubmit={handleSubmit}>
               <DialogHeader>
-                <DialogTitle>{editingCliente ? 'Editar Cliente' : 'Novo Cliente'}</DialogTitle>
+                <DialogTitle>{editingCliente ? 'Editar Paciente' : 'Novo Paciente'}</DialogTitle>
                 <DialogDescription>
-                  {editingCliente ? 'Atualize os dados do cliente.' : 'Preencha os dados do novo cliente.'}
+                  {editingCliente ? 'Atualize os dados do paciente.' : 'Preencha os dados do novo paciente.'}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
@@ -233,26 +233,26 @@ export default function Clientes() {
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : clientes.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="p-4 rounded-full bg-muted mb-4">
-            <Users className="h-8 w-8 text-muted-foreground" />
+        <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-xl border border-dashed">
+          <div className="p-4 rounded-full bg-accent mb-4">
+            <Users className="h-8 w-8 text-primary" />
           </div>
-          <h3 className="text-lg font-medium mb-1">Nenhum cliente cadastrado</h3>
-          <p className="text-muted-foreground mb-4">Comece adicionando seu primeiro cliente.</p>
+          <h3 className="text-lg font-semibold text-foreground mb-1">Nenhum paciente cadastrado</h3>
+          <p className="text-muted-foreground mb-6">Comece adicionando seu primeiro paciente.</p>
           <Button onClick={openCreateDialog} className="gap-2">
             <Plus className="h-4 w-4" />
-            Novo Cliente
+            Novo Paciente
           </Button>
         </div>
       ) : (
-        <div className="border rounded-lg overflow-hidden">
+        <div className="bg-card border rounded-xl overflow-hidden shadow-sm">
           <table className="w-full">
-            <thead className="bg-muted/50">
+            <thead className="bg-muted/50 border-b">
               <tr>
-                <th className="text-left p-4 font-medium">Nome</th>
-                <th className="text-left p-4 font-medium">Telefone</th>
-                <th className="text-left p-4 font-medium">Email</th>
-                <th className="text-right p-4 font-medium">Ações</th>
+                <th className="text-left p-4 font-semibold text-foreground">Nome</th>
+                <th className="text-left p-4 font-semibold text-foreground">Telefone</th>
+                <th className="text-left p-4 font-semibold text-foreground">Email</th>
+                <th className="text-right p-4 font-semibold text-foreground">Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -290,7 +290,7 @@ export default function Clientes() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir cliente?</AlertDialogTitle>
+            <AlertDialogTitle>Excluir paciente?</AlertDialogTitle>
             <AlertDialogDescription>
               Tem certeza que deseja excluir <strong>{deletingCliente?.nome}</strong>? Esta ação não pode ser desfeita.
             </AlertDialogDescription>

@@ -84,10 +84,10 @@ export default function Agenda() {
   const consultasCanceladas = consultas.filter(c => c.status === 'cancelada');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Agenda</h1>
+          <h1 className="text-2xl font-bold text-foreground">Agenda</h1>
           <p className="text-muted-foreground">Gerencie suas consultas agendadas</p>
         </div>
         <Button onClick={() => setIsNovaConsultaOpen(true)} className="gap-2">
@@ -96,9 +96,9 @@ export default function Agenda() {
         </Button>
       </div>
 
-      <div className="grid lg:grid-cols-[300px_1fr] gap-6">
+      <div className="grid lg:grid-cols-[320px_1fr] gap-6">
         {/* Calendário */}
-        <div className="bg-card rounded-lg border p-4">
+        <div className="bg-card rounded-xl border p-4 shadow-sm">
           <Calendar
             mode="single"
             selected={dataSelecionada}
@@ -110,21 +110,23 @@ export default function Agenda() {
 
         {/* Lista de consultas */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2 text-lg font-medium">
+          <div className="flex items-center gap-2 text-lg font-semibold text-foreground">
             <CalendarDays className="h-5 w-5 text-primary" />
             {format(dataSelecionada, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
           </div>
 
           {isLoading ? (
             <div className="flex justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : consultas.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center bg-muted/30 rounded-lg border border-dashed">
-              <CalendarDays className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-1">Nenhuma consulta</h3>
-              <p className="text-muted-foreground mb-4">Não há consultas agendadas para este dia.</p>
-              <Button onClick={() => setIsNovaConsultaOpen(true)} variant="outline" className="gap-2">
+            <div className="flex flex-col items-center justify-center py-16 text-center bg-card rounded-xl border border-dashed">
+              <div className="p-4 rounded-full bg-accent mb-4">
+                <CalendarDays className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-1">Nenhuma consulta</h3>
+              <p className="text-muted-foreground mb-6">Não há consultas agendadas para este dia.</p>
+              <Button onClick={() => setIsNovaConsultaOpen(true)} className="gap-2">
                 <Plus className="h-4 w-4" />
                 Agendar Consulta
               </Button>

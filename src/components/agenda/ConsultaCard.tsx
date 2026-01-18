@@ -41,7 +41,7 @@ export function ConsultaCard({ consulta, onChangeStatus, onDelete }: ConsultaCar
 
   return (
     <div className={cn(
-      'p-4 rounded-lg border bg-card transition-all hover:shadow-md',
+      'p-4 rounded-xl border bg-card transition-all hover:shadow-md',
       consulta.status === 'cancelada' && 'opacity-60'
     )}>
       <div className="flex items-start justify-between">
@@ -52,8 +52,8 @@ export function ConsultaCard({ consulta, onChangeStatus, onDelete }: ConsultaCar
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">{consulta.cliente?.nome || 'Cliente não encontrado'}</span>
+              <User className="h-4 w-4 text-primary" />
+              <span className="font-semibold text-foreground">{consulta.cliente?.nome || 'Paciente não encontrado'}</span>
             </div>
             {consulta.observacao && (
               <p className="text-sm text-muted-foreground line-clamp-2">{consulta.observacao}</p>
