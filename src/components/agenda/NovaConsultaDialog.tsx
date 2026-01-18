@@ -148,13 +148,13 @@ export function NovaConsultaDialog({ open, onOpenChange, dataSelecionada, onSucc
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="cliente">Cliente</Label>
+              <Label htmlFor="cliente">Paciente</Label>
               {isLoadingClientes ? (
                 <div className="flex items-center justify-center py-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                 </div>
               ) : clientes.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhum cliente cadastrado. Cadastre um cliente primeiro.</p>
+                <p className="text-sm text-muted-foreground">Nenhum paciente cadastrado. Cadastre um paciente primeiro.</p>
               ) : (
                 <Select value={clienteId} onValueChange={setClienteId}>
                   <SelectTrigger className={errors.clienteId ? 'border-destructive' : ''}>
